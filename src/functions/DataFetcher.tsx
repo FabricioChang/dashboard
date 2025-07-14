@@ -2,52 +2,53 @@ import { useEffect, useState } from 'react';
 import type { OpenMeteoResponse } from '../types/DashboardTypes';
 
 interface DataFetcherOutput {
-    data: OpenMeteoResponse | null;
-    loading: boolean;
-    error: string | null;
+  data: OpenMeteoResponse | null;
+  loading: boolean;
+  error: string | null;
 }
 
-export default function DataFetcher() : DataFetcherOutput {
+interface DataFetcherProps {
+  city: string;
+}
 
-    const [data, setData] = useState<OpenMeteoResponse | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+const cityCoordinates: Record<string, { lat: number; lon: number }> = {
+  guayaquil: { lat: -2.1962, lon: -79.8862 },
+  quito: { lat: -0.2299, lon: -78.5249 },
+  manta: { lat: -0.9677, lon: -80.7128 },
+  cuenca: { lat: -2.9006, lon: -79.0045 },
+};
 
-    useEffect(() => {
+export default function DataFetcher({ city }: DataFetcherProps): DataFetcherOutput {
+  const [data, setData] = useState<OpenMeteoResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-        // Reemplace con su URL de la API de Open-Meteo obtenida en actividades previas
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=-2.1962&longitude=-79.8862&hourly=temperature_2m&current=temperature_2m,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=America%2FChicago`
+  useEffect(() => {
+    const coords = cityCoordinates[city];
 
-        const fetchData = async () => {
+    if (!coords) return;
 
-            try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=temperature_2m&current=temperature_2m,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=America%2FChicago`;
 
-                const response = await fetch(url);
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
 
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
-                }
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP Error: ${response.statusText}`);
 
-                const result: OpenMeteoResponse = await response.json();
-                setData(result);
+        const result: OpenMeteoResponse = await response.json();
+        setData(result);
+      } catch (err: any) {
+        setError(err.message || 'Error desconocido al obtener los datos');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            } catch (err: any) {
+    fetchData();
+  }, [city]);
 
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError("Ocurrió un error desconocido al obtener los datos.");
-                }
-
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-
-    }, []); // El array vacío asegura que el efecto se ejecute solo una vez después del primer renderizado
-
-    return { data, loading, error };
-
+  return { data, loading, error };
 }

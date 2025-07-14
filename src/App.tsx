@@ -1,14 +1,20 @@
-import React from 'react';
+// src/App.tsx
+import { useState } from 'react';
+import { Grid } from '@mui/material';
+import './App.css';
+
 import HeaderUI from './components/HeaderUI';
 import AlertUI from './components/AlertUI';
-import IndicatorUI from './components/IndicatorUI';
 import SelectorUI from './components/SelectorUI';
+import IndicatorUI from './components/IndicatorUI';
+import ChartUI from './components/ChartUI';
+import TableUI from './components/TableUI';
 import DataFetcher from './functions/DataFetcher';
-import { Grid, Paper } from '@mui/material';
 
+export default function App() {
+  const [selectedCity, setSelectedCity] = useState('guayaquil');
+  const { data, loading, error } = DataFetcher({ city: selectedCity });
 
-function App() {
-  const dataFetcherOutput = DataFetcher();
   return (
     <Grid
       container
@@ -18,83 +24,81 @@ function App() {
       style={{ minHeight: '100vh' }}
     >
       {/* Encabezado */}
-      <Grid item xs={12} md={12}>
-        <Paper style={{ padding: 16, textAlign: 'center' }}>Encabezado</Paper>
-        <HeaderUI/>
+      <Grid item xs={12}>
+        <HeaderUI />
       </Grid>
 
       {/* Alertas */}
-      <Grid item xs={12} md={12} container justifyContent="right" alignItems="center">
-        <Paper style={{ padding: 16, textAlign: 'center' }}>Alertas</Paper>
-        <AlertUI description="No se preveen lluvias"/>
+      <Grid item xs={12}>
+        <Grid container justifyContent="flex-end" alignItems="center">
+          <AlertUI description="No se preveen lluvias" />
+        </Grid>
       </Grid>
 
-      {/* Selector y Indicadores */}
-        {/* Renderizado condicional de los datos obtenidos */}
-        {dataFetcherOutput.loading && <p>Cargando datos...</p>}
-        {dataFetcherOutput.error && <p>Error: {dataFetcherOutput.error}</p>}
-        {dataFetcherOutput.data && (
-        <>
+      {/* Selector de ciudad */}
+      <Grid item xs={12} md={3}>
+        <SelectorUI onCityChange={setSelectedCity} />
+      </Grid>
 
-            {/* Indicadores con datos obtenidos */}
-
-            <Grid size={{ xs: 12, md: 3 }} >
+      {/* Indicadores */}
+      <Grid item xs={12} md={9}>
+        <Grid container spacing={2}>
+          {loading && <p>Cargando datos...</p>}
+          {error && <p>Error: {error}</p>}
+          {data && (
+            <>
+              <Grid item xs={12} md={3}>
                 <IndicatorUI
-                    title='Temperatura (2m)'
-                    description={dataFetcherOutput.data.current.temperature_2m + " " + dataFetcherOutput.data.current_units.temperature_2m} />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 3 }}>
+                  title="Temperatura (2m)"
+                  description={`${data.current.temperature_2m} ${data.current_units.temperature_2m}`}
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
                 <IndicatorUI
-                    title='Temperatura aparente'
-                    description={dataFetcherOutput.data.current.apparent_temperature + " " + dataFetcherOutput.data.current_units.apparent_temperature} />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 3 }}>
+                  title="Temperatura aparente"
+                  description={`${data.current.apparent_temperature} ${data.current_units.apparent_temperature}`}
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
                 <IndicatorUI
-                    title='Velocidad del viento'
-                    description={dataFetcherOutput.data.current.wind_speed_10m + " " + dataFetcherOutput.data.current_units.wind_speed_10m} />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 3 }}>
+                  title="Velocidad del viento"
+                  description={`${data.current.wind_speed_10m} ${data.current_units.wind_speed_10m}`}
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
                 <IndicatorUI
-                    title='Humedad relativa'
-                    description={dataFetcherOutput.data.current.relative_humidity_2m + " " + dataFetcherOutput.data.current_units.relative_humidity_2m} />
-            </Grid>
-
-        </>
-        )}
+                  title="Humedad relativa"
+                  description={`${data.current.relative_humidity_2m} ${data.current_units.relative_humidity_2m}`}
+                />
+              </Grid>
+            </>
+          )}
+        </Grid>
+      </Grid>
 
       {/* Gráfico */}
-      <Grid
-        item
-        xs={12}
-        md={6}
-        sx={{
-          display: { xs: 'none', md: 'block' }
-        }}
-      >
-        <Paper style={{ padding: 16, textAlign: 'center' }}>Gráfico</Paper>
-      </Grid>
+      {data && (
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{ display: { xs: 'none', md: 'block' } }}
+        >
+          <ChartUI data={data} />
+        </Grid>
+      )}
 
       {/* Tabla */}
-      <Grid
-        item
-        xs={12}
-        md={6}
-        sx={{
-          display: { xs: 'none', md: 'block' }
-        }}
-      >
-        <Paper style={{ padding: 16, textAlign: 'center' }}>Tabla</Paper>
-      </Grid>
-
-      {/* Información adicional */}
-      <Grid item xs={12} md={12}>
-        <Paper style={{ padding: 16, textAlign: 'center' }}>Información adicional</Paper>
-      </Grid>
+      {data && (
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{ display: { xs: 'none', md: 'block' } }}
+        >
+          <TableUI data={data} />
+        </Grid>
+      )}
     </Grid>
   );
 }
-
-export default App;
