@@ -1,5 +1,4 @@
 // src/components/ChartUI.tsx
-import React from 'react';
 import { LineChart } from '@mui/x-charts/LineChart';
 import Typography from '@mui/material/Typography';
 import type { OpenMeteoResponse } from '../types/DashboardTypes';
