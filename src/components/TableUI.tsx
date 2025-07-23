@@ -17,19 +17,19 @@ export default function TableUI({ data }: TableUIProps) {
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'hora', headerName: 'Hora', width: 180 },
-    { field: 'temperatura', headerName: 'Temp (°C)', width: 130 },
+    { field: 'hora', headerName: data.hourly_units.time, width: 180 },
+    { field: 'temperatura', headerName: `Temp (${data.hourly_units.temperature_2m})`, width: 130 },
   ];
 
   return (
-    <Box sx={{ height: 350, width: '100%' }}>
+    <Box sx={{ height: 600, width: '100%' }}>
       <DataGrid
         rows={rows}
         columns={columns}
         initialState={{
-          pagination: { paginationModel: { pageSize: 5 } },
+          pagination: { paginationModel: { pageSize: 10 } },
         }}
-        pageSizeOptions={[5]}
+        pageSizeOptions={[10]}
         disableRowSelectionOnClick
       />
     </Box>

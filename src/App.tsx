@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import './App.css';
+import Box from '@mui/material/Box';
 
 import HeaderUI from './components/HeaderUI';
 import AlertUI from './components/AlertUI';
@@ -18,88 +17,95 @@ export default function App() {
   const { data, loading, error } = DataFetcher({ city: selectedCity });
 
   return (
-    <Container disableGutters maxWidth={false} sx={{ width: '100vw', p: 0, m: 0 }}>
-      <Grid container spacing={4}>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Grid container spacing={3}>
 
-        {/* 1. HEADER */}
+        {/* — Fila 1: HEADER — */}
         <Grid item xs={12}>
-          <Grid container justifyContent="center">
-            <Grid item>
-              <HeaderUI />
-            </Grid>
-          </Grid>
+          <HeaderUI />
         </Grid>
 
-        {/* 2. ALERTA */}
-        <Grid item xs={12}>
-          <Grid container justifyContent="center">
-            <Grid item>
-              <AlertUI description="No se preveen lluvias" />
-            </Grid>
-          </Grid>
+        {/* — Fila 2: ALERTA + SELECTOR — */}
+        <Grid item xs={12} md={6}>
+          <AlertUI description="No se prevén lluvias" />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <SelectorUI
+            initialCity={selectedCity}
+            onCityChange={(city) => setSelectedCity(city)}
+          />
         </Grid>
 
-        {/* 3. SELECTOR + TARJETAS */}
+        {/* — Fila 3: INDICADORES — */}
         <Grid item xs={12}>
-          <Grid container spacing={2} alignItems="flex-start">
-            {/* Selector */}
-            <Grid item xs={12} md={3}>
-              <SelectorUI onCityChange={(city: string) => setSelectedCity(city)} />
-            </Grid>
-            {/* Indicadores */}
-            <Grid item xs={12} md={9}>
-              {loading && (
-                <Typography align="center">Cargando datos…</Typography>
-              )}
-              {error && (
-                <Typography align="center" color="error">
-                  Error: {error}
-                </Typography>
-              )}
-              {data && (
-                <Grid container spacing={2}>
-                  <Grid item xs={6} md={3}>
-                    <IndicatorUI
-                      title="Temperatura (2m)"
-                      description={`${data.current.temperature_2m} ${data.current_units.temperature_2m}`}
-                    />
-                  </Grid>
-                  <Grid item xs={6} md={3}>
-                    <IndicatorUI
-                      title="Temperatura aparente"
-                      description={`${data.current.apparent_temperature} ${data.current_units.apparent_temperature}`}
-                    />
-                  </Grid>
-                  <Grid item xs={6} md={3}>
-                    <IndicatorUI
-                      title="Velocidad del viento"
-                      description={`${data.current.wind_speed_10m} ${data.current_units.wind_speed_10m}`}
-                    />
-                  </Grid>
-                  <Grid item xs={6} md={3}>
-                    <IndicatorUI
-                      title="Humedad relativa"
-                      description={`${data.current.relative_humidity_2m} ${data.current_units.relative_humidity_2m}`}
-                    />
-                  </Grid>
+          {loading || error ? (
+            <Box textAlign="center" color={error ? 'error.main' : 'text.secondary'}>
+              {loading ? 'Cargando datos…' : `Error: ${error}`}
+            </Box>
+          ) : (
+            <Grid container spacing={2}>
+              {data && [
+                {
+                  title: 'Temperatura (2m)',
+                  value: data.current.temperature_2m,
+                  unit: data.current_units.temperature_2m,
+                },
+                {
+                  title: 'Temperatura aparente',
+                  value: data.current.apparent_temperature,
+                  unit: data.current_units.apparent_temperature,
+                },
+                {
+                  title: 'Velocidad del viento',
+                  value: data.current.wind_speed_10m,
+                  unit: data.current_units.wind_speed_10m,
+                },
+                {
+                  title: 'Humedad relativa',
+                  value: data.current.relative_humidity_2m,
+                  unit: data.current_units.relative_humidity_2m,
+                },
+              ].map((ind, i) => (
+                <Grid key={i} item xs={6} sm={3}>
+                  <IndicatorUI
+                    title={ind.title}
+                    description={`${ind.value} ${ind.unit}`}
+                  />
                 </Grid>
-              )}
+              ))}
             </Grid>
-          </Grid>
+          )}
         </Grid>
 
-        {/* 4. GRÁFICO + TABLA */}
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
+        {/* — Fila 4: GRÁFICO + TABLA — */}
+        {data && (
+          <>
             <Grid item xs={12} md={6}>
-              {data && <ChartUI data={data} />}
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: 'background.paper',
+                  borderRadius: 1,
+                  height: '100%',
+                }}
+              >
+                <ChartUI data={data} />
+              </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              {data && <TableUI data={data} />}
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: 'background.paper',
+                  borderRadius: 1,
+                  height: '100%',
+                }}
+              >
+                <TableUI data={data} />
+              </Box>
             </Grid>
-          </Grid>
-        </Grid>
-
+          </>
+        )}
       </Grid>
     </Container>
   );
